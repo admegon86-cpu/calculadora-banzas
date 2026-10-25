@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Pedidos - Sede Cannabis FiveM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0e1112',
+                        cardbg: '#141819',
+                        cardborder: '#22282a',
+                        accent: '#22c55e',
+                        accenthover: '#16a34a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #080a0b;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.6) 0px, transparent 50%);
+            background-attachment: fixed;
+            font-family: 'Inter', sans-serif;
+            color: #e2e8f0;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e1112;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #22282a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333d40;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex items-center justify-center">
+
+    <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- SECCIÓN IZQUIERDA: CONFIGURACIÓN Y CATÁLOGO -->
+        <div class="lg:col-span-8 space-y-6">
+
+            <!-- PANEL DE CONFIGURACIÓN -->
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 md:p-6 shadow-2xl backdrop-blur-md">
+                
+                <!-- Encabezado de la sección -->
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <span class="text-xs font-mono font-semibold text-emerald-500 uppercase tracking-wider">01 / CONFIGURACIÓN DE TARIFA</span>
+                        <h1 class="text-2xl font-bold text-white tracking-tight">Calculadora de Pedidos - Sede</h1>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-400 font-mono">
+                        3 Productos
+                    </span>
+                </div>
+
+                <!-- Selección de Alianza -->
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+                        <i class="fas fa-handshake text-emerald-400 mr-2"></i>Tipo de Cliente / Acuerdo
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Con Alianza -->
+                        <button id="btnAlianza" onclick="setAlliance(true)" 
+                            class="cursor-pointer border-2 border-emerald-500 bg-emerald-950/20 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                                    <i class="fa-solid fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Alianza de Sangre</div>
+                                    <div class="text-xs text-zinc-400">$10.000 / u + Bonificación</div>
+                                </div>
+                            </div>
+                            <div id="checkAlianza" class="text-emerald-400 mt-1">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </button>
+
+                        <!-- Sin Alianza -->
+                        <button id="btnSinAlianza" onclick="setAlliance(false)" 
+                            class="cursor-pointer border border-cardborder bg-zinc-900/40 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200 hover:border-zinc-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="p-2 rounded-lg bg-zinc-800 text-zinc-400">
+                                    <i class="fa-solid fa-user-slash"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-white">Sin Alianza</div>
+                                    <div class="text-xs text-zinc-400">$15.000 / u (Estándar)</div>
+                                </div>
+                            </div>
+                            <div id="checkSinAlianza" class="text-zinc-600 mt-1 hidden">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Mensaje informativo sobre los regalos -->
+                    <div id="allianceNotice" class="mt-3 text-xs text-emerald-400 flex items-center gap-1.5 font-medium bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-500/20">
+                        <i class="fas fa-gift text-emerald-400"></i>
+                        <span>✨ Bonificación activa: <b>+10 regalo por cada 100u</b> (Exclusivo Alianza de Sangre)</span>
+                    </div>
+                </div>
+
+                <!-- Input Referencia del Cliente -->
+                <div class="mb-6">
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                        <i class="fas fa-user-tag text-emerald-400 mr-2"></i>Cliente / Discord / ID (Opcional)
+                    </label>
+                    <input type="text" id="clientRef" placeholder="Ej: @JuanPerez / ID 104" 
+                        class="w-full bg-zinc-900/90 border border-cardborder rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors">
+                </div>
+
+            </div>
+
+            <!-- CATÁLOGO DE PRODUCTOS -->
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 md:p-6 shadow-2xl backdrop-blur-md">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-mono font-semibold text-emerald-500 uppercase tracking-wider">02 / CATÁLOGO DE PRODUCTOS</span>
+                    <button onclick="clearCart()" class="text-xs text-zinc-500 hover:text-rose-400 transition flex items-center gap-1">
+                        <i class="fas fa-trash-alt"></i> Limpiar cantidades
+                    </button>
+                </div>
+                
+                <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Productos renderizados dinámicamente -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN DERECHA: RESUMEN DEL PEDIDO -->
+        <div class="lg:col-span-4">
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 md:p-6 shadow-2xl sticky top-8 space-y-6">
+                
+                <!-- Encabezado Resumen -->
+                <div class="flex justify-between items-center pb-4 border-b border-cardborder">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-file-invoice text-emerald-500 text-sm"></i>
+                        <h3 class="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">RESUMEN DEL PEDIDO</h3>
+                    </div>
+                    <span class="text-xs font-mono text-zinc-600 font-bold">03</span>
+                </div>
+
+                <!-- Total a pagar principal -->
+                <div>
+                    <span class="text-xs font-medium text-zinc-400 block mb-1">Total a pagar</span>
+                    <div class="text-4xl font-extrabold text-white font-mono tracking-tight flex items-baseline">
+                        <span class="text-emerald-500 mr-1">$</span>
+                        <span id="lblTotalPaid">0</span>
+                    </div>
+                    <span class="text-[11px] text-zinc-500 mt-1 block">Moneda interna de FiveM</span>
+                </div>
+
+                <!-- Desglose de Productos Seleccionados -->
+                <div id="cartItems" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <div class="text-center text-xs text-zinc-500 py-3">No has seleccionado ningún producto aún.</div>
+                </div>
+
+                <!-- Desglose de Unidades -->
+                <div class="space-y-3 py-4 border-y border-cardborder text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-zinc-400">Total comprado</span>
+                        <span id="lblTotalBought" class="font-mono text-white font-semibold">0 u</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-emerald-400 font-medium">Regalo Alianza</span>
+                        <span id="lblTotalGift" class="font-mono text-emerald-400 font-semibold">+0 u</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-cardborder/50">
+                        <span class="text-white font-semibold">Total a entregar</span>
+                        <span id="lblTotalDelivered" class="font-mono text-white font-bold text-base">0 u</span>
+                    </div>
+                </div>
+
+                <!-- Promedio por Unidad -->
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-zinc-500">Precio unitario efectivo</span>
+                    <span id="lblAvgPrice" class="font-mono text-zinc-300 font-semibold">$0 / u</span>
+                </div>
+
+                <!-- Acciones de Exportación -->
+                <div class="space-y-2 pt-2">
+                    <button onclick="copyDiscordFormat()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-950/40 active:scale-[0.99]">
+                        <i class="fa-solid fa-copy text-xs"></i>
+                        <span>Copiar resumen (Discord)</span>
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-center text-zinc-600 leading-relaxed">
+                    Al hacer clic en copiar se generará un recibo formateado listo para pegar en el Discord de la sede.
+                </p>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NOTIFICACIÓN TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-semibold text-sm border border-emerald-400/40 transition-all duration-300 transform translate-y-20 opacity-0 z-50">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toastMsg">Notificación</span>
+    </div>
+
+    <!-- LÓGICA DE JAVASCRIPT -->
+    <script>
+        // Configuración de Productos y Precios
+        const PRODUCTS = [
+            { id: 'porros', name: 'Porros', icon: 'fa-joint', priceWith: 10000, priceWithout: 15000 },
+            { id: 'meta', name: 'Metanfetamina', icon: 'fa-vial', priceWith: 10000, priceWithout: 15000 },
+            { id: 'coca', name: 'Coca', icon: 'fa-cubes', priceWith: 10000, priceWithout: 15000 }
+        ];
+
+        // Estado Global
+        let hasAlliance = true;
+        let cart = {
+            porros: 0,
+            meta: 0,
+            coca: 0
+        };
+
+        // Regalo: 10 unidades extra por cada 100 unidades compradas (SOLO PARA ALIANZA DE SANGRE)
+        const GIFT_PER_100 = 10;
+
+        function setAlliance(status) {
+            hasAlliance = status;
+            
+            const btnWith = document.getElementById('btnAlianza');
+            const btnWithout = document.getElementById('btnSinAlianza');
+            const checkWith = document.getElementById('checkAlianza');
+            const checkWithout = document.getElementById('checkSinAlianza');
+            const notice = document.getElementById('allianceNotice');
+
+            if (hasAlliance) {
+                btnWith.className = 'cursor-pointer border-2 border-emerald-500 bg-emerald-950/20 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200';
+                btnWithout.className = 'cursor-pointer border border-cardborder bg-zinc-900/40 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200 hover:border-zinc-700';
+                checkWith.classList.remove('hidden');
+                checkWithout.classList.add('hidden');
+                
+                notice.innerHTML = '<i class="fas fa-gift text-emerald-400"></i> <span>✨ Bonificación activa: <b>+10 regalo por cada 100u</b> (Exclusivo Alianza de Sangre)</span>';
+                notice.className = 'mt-3 text-xs text-emerald-400 flex items-center gap-1.5 font-medium bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-500/20';
+            } else {
+                btnWith.className = 'cursor-pointer border border-cardborder bg-zinc-900/40 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200 hover:border-zinc-700';
+                btnWithout.className = 'cursor-pointer border-2 border-rose-500 bg-rose-950/20 rounded-lg p-3.5 flex items-start justify-between text-left transition-all duration-200';
+                checkWith.classList.add('hidden');
+                checkWithout.classList.remove('hidden');
+                checkWithout.className = 'text-rose-400 mt-1';
+
+                notice.innerHTML = '<i class="fas fa-exclamation-triangle text-amber-400"></i> <span class="text-amber-300">⚠️ Sin alianza: <b>No aplican regalos/bonificaciones</b> de unidades extra.</span>';
+                notice.className = 'mt-3 text-xs text-amber-400 flex items-center gap-1.5 font-medium bg-amber-950/30 p-2.5 rounded-lg border border-amber-500/20';
+            }
+
+            renderProducts();
+            updateSummary();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            PRODUCTS.forEach(p => {
+                const currentPrice = hasAlliance ? p.priceWith : p.priceWithout;
+                const qty = cart[p.id] || 0;
+
+                const card = document.createElement('div');
+                card.className = 'bg-zinc-900/80 border border-cardborder rounded-xl p-4 flex flex-col justify-between shadow-lg hover:border-zinc-700 transition-all';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-emerald-400 bg-emerald-500/10 p-2.5 rounded-lg text-lg">
+                                <i class="fas ${p.icon}"></i>
+                            </span>
+                            <span class="text-xs font-bold font-mono px-2.5 py-1 rounded-md ${hasAlliance ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+                                $${currentPrice.toLocaleString('es-ES')}/u
+                            </span>
+                        </div>
+                        <h3 class="font-bold text-white text-base mb-1">${p.name}</h3>
+                        <p class="text-xs text-zinc-400 mb-4">
+                            ${hasAlliance ? '<span class="text-emerald-400 font-medium">Tarifa Alianza de Sangre</span>' : '<span class="text-zinc-500">Tarifa Pública Estándar</span>'}
+                        </p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-zinc-950 rounded-lg border border-cardborder p-1">
+                            <button onclick="updateQty('${p.id}', -10)" class="w-8 h-8 rounded bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-xs text-zinc-300 font-bold transition">-10</button>
+                            <button onclick="updateQty('${p.id}', -1)" class="w-8 h-8 rounded bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 font-bold transition">-</button>
+                            
+                            <input type="number" value="${qty}" min="0" onchange="setQty('${p.id}', this.value)" 
+                                   class="w-16 bg-transparent text-center font-mono font-bold text-white focus:outline-none text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                            
+                            <button onclick="updateQty('${p.id}', 1)" class="w-8 h-8 rounded bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 font-bold transition">+</button>
+                            <button onclick="updateQty('${p.id}', 10)" class="w-8 h-8 rounded bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-xs text-zinc-300 font-bold transition">+10</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="updateQty('${p.id}', 50)" class="py-1 px-2 text-xs bg-zinc-800/80 hover:bg-emerald-600/20 border border-zinc-700 hover:border-emerald-500/40 rounded text-zinc-300 hover:text-emerald-300 font-mono transition">+50</button>
+                            <button onclick="updateQty('${p.id}', 100)" class="py-1 px-2 text-xs bg-zinc-800/80 hover:bg-emerald-600/20 border border-zinc-700 hover:border-emerald-500/40 rounded text-zinc-300 hover:text-emerald-300 font-mono transition">+100</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateQty(id, change) {
+            cart[id] = Math.max(0, (cart[id] || 0) + change);
+            renderProducts();
+            updateSummary();
+        }
+
+        function setQty(id, val) {
+            const num = parseInt(val) || 0;
+            cart[id] = Math.max(0, num);
+            renderProducts();
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let totalBought = 0;
+            let totalPrice = 0;
+
+            PRODUCTS.forEach(p => {
+                const qty = cart[p.id] || 0;
+                const price = hasAlliance ? p.priceWith : p.priceWithout;
+                totalBought += qty;
+                totalPrice += qty * price;
+            });
+
+            // Regalo de +10u por cada 100u compradas (APLICA ÚNICAMENTE PARA ALIANZA DE SANGRE)
+            const totalGift = hasAlliance ? Math.floor(totalBought / 100) * GIFT_PER_100 : 0;
+            const totalDelivered = totalBought + totalGift;
+            const avgPrice = totalDelivered > 0 ? (totalPrice / totalDelivered) : 0;
+
+            document.getElementById('lblTotalPaid').textContent = totalPrice.toLocaleString('es-ES');
+            document.getElementById('lblTotalBought').textContent = `${totalBought.toLocaleString('es-ES')} u`;
+            document.getElementById('lblTotalGift').textContent = `+${totalGift.toLocaleString('es-ES')} u`;
+            document.getElementById('lblTotalDelivered').textContent = `${totalDelivered.toLocaleString('es-ES')} u`;
+            document.getElementById('lblAvgPrice').textContent = `$${Math.round(avgPrice).toLocaleString('es-ES')} / u`;
+
+            // Actualizar lista de items seleccionados
+            const itemsContainer = document.getElementById('cartItems');
+            itemsContainer.innerHTML = '';
+
+            let hasItems = false;
+            PRODUCTS.forEach(p => {
+                const qty = cart[p.id] || 0;
+                if (qty > 0) {
+                    hasItems = true;
+                    const price = hasAlliance ? p.priceWith : p.priceWithout;
+                    const subtotal = qty * price;
+
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-zinc-950 p-2.5 rounded-lg border border-cardborder text-xs';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fas ${p.icon} text-emerald-400"></i>
+                            <div>
+                                <span class="font-bold text-zinc-200">${p.name}</span>
+                                <div class="text-[10px] text-zinc-500">${qty} u x $${price.toLocaleString('es-ES')}</div>
+                            </div>
+                        </div>
+                        <span class="font-mono font-bold text-emerald-400">$${subtotal.toLocaleString('es-ES')}</span>
+                    `;
+                    itemsContainer.appendChild(div);
+                }
+            });
+
+            if (!hasItems) {
+                itemsContainer.innerHTML = '<div class="text-center text-xs text-zinc-500 py-3">No has seleccionado ningún producto aún.</div>';
+            }
+        }
+
+        function clearCart() {
+            cart = { porros: 0, meta: 0, coca: 0 };
+            document.getElementById('clientRef').value = '';
+            renderProducts();
+            updateSummary();
+            showToast('Cantidades limpiadas correctamente', 'info');
+        }
+
+        function copyDiscordFormat() {
+            let totalBought = 0;
+            let totalPrice = 0;
+            let productDetails = [];
+
+            PRODUCTS.forEach(p => {
+                const qty = cart[p.id] || 0;
+                if (qty > 0) {
+                    const price = hasAlliance ? p.priceWith : p.priceWithout;
+                    const subtotal = qty * price;
+                    totalBought += qty;
+                    totalPrice += subtotal;
+                    productDetails.push(`  • **${p.name}**: ${qty.toLocaleString('es-ES')} u ($${subtotal.toLocaleString('es-ES')})`);
+                }
+            });
+
+            if (totalBought === 0) {
+                showToast('Añade al menos un producto antes de copiar', 'warning');
+                return;
+            }
+
+            const clientRef = document.getElementById('clientRef').value.trim() || 'No especificado';
+            const totalGift = hasAlliance ? Math.floor(totalBought / 100) * GIFT_PER_100 : 0;
+            const totalDelivered = totalBought + totalGift;
+            const allianceText = hasAlliance ? '🟩 **Alianza de Sangre** ($10.000/u)' : '🟥 **Sin Alianza** ($15.000/u)';
+
+            let text = `🌿 **--- REGISTRO DE VENTA - SEDE CANNABIS ---** 🌿
+
+👤 **Cliente / ID:** ${clientRef}
+🤝 **Tipo de Tarifa:** ${allianceText}
+
+📦 **DETALLE DEL PEDIDO:**
+${productDetails.join('\n')}
+
+📊 **RESUMEN TOTAL:**
+  • **Total Comprado:** ${totalBought.toLocaleString('es-ES')} u
+  • **Regalo Alianza (+10 u por cada 100u):** ${hasAlliance ? `+${totalGift.toLocaleString('es-ES')} u` : 'N/A (Solo Alianza)'}
+  • **TOTAL A ENTREGAR:** ${totalDelivered.toLocaleString('es-ES')} u
+  • **TOTAL A PAGAR:** $${totalPrice.toLocaleString('es-ES')}
+  • **Precio Unitario Promedio:** $${Math.round(totalDelivered > 0 ? totalPrice / totalDelivered : 0).toLocaleString('es-ES')}/u
+
+✨ *¡Sede Cannabis FiveM!*`;
+
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast('¡Copiado para Discord con éxito!', 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            
+            toastMsg.textContent = message;
+            
+            if (type === 'warning') {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 bg-amber-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-semibold text-sm border border-amber-400/40';
+            } else if (type === 'info') {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 bg-zinc-800 text-zinc-200 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-semibold text-sm border border-zinc-600/40';
+            } else {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-semibold text-sm border border-emerald-400/40';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Inicializar al cargar la ventana
+        window.onload = function() {
+            setAlliance(true);
+        };
+    </script>
+</body>
+</html>
